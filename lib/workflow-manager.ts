@@ -80,7 +80,7 @@ class WorkflowManager {
     unlock(userId: string): void {
         this.initLock(userId);
         this.locks[userId] = false;
-        this.lastRequestTime[userId] = null;
+        // this.lastRequestTime[userId] = null; // Line 訊息會有延遲, 所以無論是否已完成這次請求, 都不應該立即解鎖
     }
 
     // 檢查使用者是否處於鎖定狀態
