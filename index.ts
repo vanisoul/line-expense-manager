@@ -87,7 +87,7 @@ async function handleEvent(event: Line.MessageEvent) {
       // 儲存金額
       return handleCompleted(event, userId, userMessage); // 完成
     } else {
-      return resetWorkflow(event);
+      return resetWorkflow(event, userId);
     }
   };
 
@@ -113,7 +113,7 @@ async function handleSendMessage(event: Line.MessageEvent, userId: string) {
 }
 
 async function handleAskInitiator(event: Line.MessageEvent, userId: string, userMessage: string) {
-  if (userMessage === "取消") return resetWorkflow(event);
+  if (userMessage === "取消") return resetWorkflow(event, userId);
 
   workflowManager.nextStep(userId); // 推進到 ASK_MAIN_CATEGORY
 
@@ -132,7 +132,7 @@ async function handleAskInitiator(event: Line.MessageEvent, userId: string, user
 }
 
 async function handleAskMainCategory(event: Line.MessageEvent, userId: string, userMessage: string) {
-  if (userMessage === "取消") return resetWorkflow(event);
+  if (userMessage === "取消") return resetWorkflow(event, userId);
 
   workflowManager.nextStep(userId); // 推進到 ASK_DETAIL
 
@@ -151,7 +151,7 @@ async function handleAskMainCategory(event: Line.MessageEvent, userId: string, u
 }
 
 async function handleAskDetail(event: Line.MessageEvent, userId: string, userMessage: string) {
-  if (userMessage === "取消") return resetWorkflow(event);
+  if (userMessage === "取消") return resetWorkflow(event, userId);
 
   workflowManager.nextStep(userId); // 推進到 ASK_EXPENSE_TYPE
 
@@ -165,7 +165,7 @@ async function handleAskDetail(event: Line.MessageEvent, userId: string, userMes
 }
 
 async function handleAskExpenseType(event: Line.MessageEvent, userId: string, userMessage: string) {
-  if (userMessage === "取消") return resetWorkflow(event);
+  if (userMessage === "取消") return resetWorkflow(event, userId);
 
   workflowManager.nextStep(userId); // 推進到 ASK_AMOUNT
 
@@ -184,12 +184,10 @@ async function handleAskExpenseType(event: Line.MessageEvent, userId: string, us
 }
 
 async function handleCompleted(event: Line.MessageEvent, userId: string, userMessage: string) {
-  if (userMessage === "取消") return resetWorkflow(event);
-
-  workflowManager.resetWorkflow(userId); // 重置工作流程
+  if (userMessage === "取消") return resetWorkflow(event, userId);
 
   const completedMessage = getEcho("已完成登記帳務資訊。");
-
+  workflowManager.resetWorkflow(userId); // 重置工作流程
   return client.replyMessage({
     replyToken: event.replyToken,
     messages: [completedMessage, startMessage],
@@ -197,7 +195,7 @@ async function handleCompleted(event: Line.MessageEvent, userId: string, userMes
 }
 
 async function handleAskAmount(event: Line.MessageEvent, userId: string, userMessage: string) {
-  if (userMessage === "取消") return resetWorkflow(event);
+  if (userMessage === "取消") return resetWorkflow(event, userId);
 
   workflowManager.nextStep(userId); // 推進到 COMPLETED
 
@@ -211,8 +209,11 @@ async function handleAskAmount(event: Line.MessageEvent, userId: string, userMes
 }
 
 
-async function resetWorkflow(event: Line.MessageEvent) {
+async function resetWorkflow(event: Line.MessageEvent, userId: string) {
   const resetMessage = getEcho("已取消流程，返回初始階段。");
+
+  workflowManager.resetWorkflow(userId); // 重置工作流程
+
   return client.replyMessage({
     replyToken: event.replyToken,
     messages: [resetMessage, startMessage],
