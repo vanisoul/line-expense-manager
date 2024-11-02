@@ -1,6 +1,46 @@
 ﻿import * as Line from "@line/bot-sdk";
+import { ButtonConfig } from "../models/message-model";
 
-export function getQuoteFlex(message: string) {
+export function createButtonFlexMessage(title: string, buttons: ButtonConfig[]): Line.messagingApi.Message {
+  return {
+    type: "flex",
+    altText: "",
+    contents: {
+      type: "bubble",
+      body: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: title,
+            weight: "bold",
+            size: "md",
+            align: "center"
+          },
+          {
+            type: "box",
+            layout: "horizontal",
+            spacing: "md",
+            contents: buttons.map(button => ({
+              type: "button",
+              action: {
+                type: "message",
+                label: button.label,
+                text: button.text
+              },
+              style: button.style || "primary", // 預設為 primary
+              height: "sm" // 調整按鈕大小
+            }))
+          }
+        ]
+      }
+    }
+  };
+}
+
+
+export function getQuoteFlex(message: string): Line.messagingApi.Message {
   // 創建 Flex Message，包含引用的訊息和回覆的內容
   const flexMessage: Line.FlexMessage = {
     type: "flex",
@@ -52,9 +92,9 @@ export function getQuoteFlex(message: string) {
       },
     },
   };
-  return flexMessage;
+  return flexMessage as Line.messagingApi.Message;
 }
 
-export function getEcho(text: string): Line.TextMessage {
+export function getEcho(text: string): Line.messagingApi.Message {
   return { type: "text", text };
 }

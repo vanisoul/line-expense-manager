@@ -1,11 +1,11 @@
-﻿import type { EnvManagerConfig, Person, ExpenseCategory } from "../models/env-model";
+﻿import type { EnvManagerConfig, Person, ExpenseCategory, PaymentConfig } from "../models/env-model";
 
 /*
 export WHITELIST_USER_IDS="U1234567890abcdef1234567890abcdef,Uabcdef1234567890abcdef1234567890,U88888888888888888888888888888888"
 
 export PERSON_COUNT=2
 export PERSON_1_USERNAME="王大明"
-export PERSON_1_USERID="U1234567890abcdef1234567890abcdef"
+export PERSON_1_USERID="U1234567890abcdef1234567890abcdef" TODO: 未來可做為廣播時 TAG 使用, 目前尚無利用
 export PERSON_1_ALLOCATION_PERCENTAGE=50
 export PERSON_1_DAILY_MEAL_COST=200
 export PERSON_1_MONTHLY_OTHER_EXPENSES=1000
@@ -25,9 +25,18 @@ export EXPENSE_CATEGORY_2_IS_MEAL_COST=true
 
 export EXPENSE_CATEGORY_3_NAME="消夜"
 export EXPENSE_CATEGORY_3_IS_MEAL_COST=false
+
+export BROADCAST_GROUP_ID="C1234567890abcdef1234567890abcdef"
+
+export PAYMENT_CONFIG_COUNT=2
+export PAYMENT_CONFIG_1_NAME="個人"
+export PAYMENT_CONFIG_1_IS_PUBLIC_EXPENSE=false
+
+export PAYMENT_CONFIG_2_NAME="公費"
+export PAYMENT_CONFIG_2_IS_PUBLIC_EXPENSE=true
 */
 
-export class EnvManager {
+class EnvManager {
     config: EnvManagerConfig;
 
     constructor() {
@@ -37,10 +46,12 @@ export class EnvManager {
     private loadConfigFromEnv(): EnvManagerConfig {
         const persons = this.loadPersons();
         const expenseCategories = this.loadExpenseCategories();
+        const paymentConfigs = this.loadPaymentConfigs();
 
         return {
             persons,
             expenseCategories,
+            paymentConfigs
         };
     }
 
@@ -86,17 +97,39 @@ export class EnvManager {
         return categories;
     }
 
+    private loadPaymentConfigs(): PaymentConfig[] {
+        const paymentConfigCount = Number(process.env.PAYMENT_CONFIG_COUNT || 0);
+        const paymentConfigs: PaymentConfig[] = [];
+
+        for (let i = 1; i <= paymentConfigCount; i++) {
+            const name = process.env[`PAYMENT_CONFIG_${i}_NAME`] || '';
+            const isPublicExpense = process.env[`PAYMENT_CONFIG_${i}_IS_PUBLIC_EXPENSE`] === 'true';
+
+            paymentConfigs.push({
+                name,
+                isPublicExpense,
+            });
+        }
+
+        return paymentConfigs;
+    }
+
     private loadWhitelistUserIds(): Set<string> {
         const whitelist = process.env.WHITELIST_USER_IDS || '';
         return new Set(whitelist.split(',').map(id => id.trim()).filter(id => id !== ''));
     }
 
-    getConfig(): EnvManagerConfig {
-        return this.config;
+    isWhitelistUser(userId: string): boolean {
+        return this.loadWhitelistUserIds().has(userId);
     }
 }
 
-// CHANNEL_SECRET
+export const envManager = new EnvManager();
+
+// LINE CHANNEL_SECRET
 export const channelSecret = process.env.CHANNEL_SECRET || "";
-// CHANNEL_ACCESS_TOKEN
+// LINE CHANNEL_ACCESS_TOKEN
 export const channelAccessToken = process.env.CHANNEL_ACCESS_TOKEN || "";
+
+// BROADCAST_GROUP_ID
+export const broadcastGroupId = process.env.BROADCAST_GROUP_ID || "";

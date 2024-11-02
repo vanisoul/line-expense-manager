@@ -1,6 +1,7 @@
 ﻿export type EnvManagerConfig = {
     persons: Person[];
     expenseCategories: ExpenseCategory[];
+    paymentConfigs: PaymentConfig[];
 };
 
 export type Person = {
@@ -27,5 +28,7 @@ export type ExpenseCategory = {
     isMealCost: boolean; // 是否為伙食費，若否則為月其餘花費
 };
 
-
-export type PaymentType = "自我負擔" | "公費請款";
+export type PaymentConfig = {
+    name: string;
+    isPublicExpense: boolean; // 是否為公共支出
+};
