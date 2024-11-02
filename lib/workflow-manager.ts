@@ -53,7 +53,7 @@ class WorkflowManager {
 
     // 重置工作流程
     resetWorkflow(userId: string): void {
-        this.workflows[userId] = this.initialStep;
+        this.workflows[userId] = "ASK_INITIATOR"; // 因為重置完成會先輸出第一步, 所以第二步開始
         this.data[userId] = {}; // 清空使用者資料
         this.unlock(userId); // 重置時自動解鎖
     }
