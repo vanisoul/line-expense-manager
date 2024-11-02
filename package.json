@@ -1,0 +1,16 @@
+{
+  "name": "line-bot",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@line/bot-sdk": "^9.4.2",
+    "express": "^4.21.1"
+  }
+}
