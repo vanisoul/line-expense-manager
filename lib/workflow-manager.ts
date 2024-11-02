@@ -1,4 +1,6 @@
-﻿type StepType = "SEND_MESSAGE" | "AWAIT_USER_CONFIRMATION" | "ASK_INITIATOR" | "ASK_MAIN_CATEGORY" | "ASK_DETAIL" | "ASK_EXPENSE_TYPE" | "ASK_AMOUNT" | "COMPLETED";
+﻿import { userDuplicateRequestIntervalMs } from "../lib/env-manager";
+
+type StepType = "SEND_MESSAGE" | "ASK_INITIATOR" | "ASK_MAIN_CATEGORY" | "ASK_DETAIL" | "ASK_EXPENSE_TYPE" | "ASK_AMOUNT" | "COMPLETED";
 
 type ItemData = {
     initiator?: string; // 申請人
@@ -11,6 +13,7 @@ type ItemData = {
 class WorkflowManager {
     private workflows: { [userId: string]: StepType } = {}; // 儲存每個使用者的當前步驟
     private locks: { [userId: string]: boolean } = {};     // 儲存每個使用者的鎖定狀態
+    private lastRequestTime: { [userId: string]: number | null } = {}; // 記錄每個使用者的最後請求時間戳
     private data: { [userId: string]: ItemData } = {}; // 儲存每個使用者的流程資料
 
     // 初始化工作流程的初始步驟
@@ -33,8 +36,7 @@ class WorkflowManager {
     nextStep(userId: string): void {
         const currentStep = this.getCurrentStep(userId);
         const nextSteps: { [key: string]: StepType } = {
-            SEND_MESSAGE: "AWAIT_USER_CONFIRMATION",
-            AWAIT_USER_CONFIRMATION: "ASK_INITIATOR",
+            SEND_MESSAGE: "ASK_INITIATOR",
             ASK_INITIATOR: "ASK_MAIN_CATEGORY",
             ASK_MAIN_CATEGORY: "ASK_DETAIL",
             ASK_DETAIL: "ASK_EXPENSE_TYPE",
@@ -52,6 +54,8 @@ class WorkflowManager {
     // 重置工作流程
     resetWorkflow(userId: string): void {
         this.workflows[userId] = this.initialStep;
+        this.data[userId] = {}; // 清空使用者資料
+        this.unlock(userId); // 重置時自動解鎖
     }
 
     // 刪除工作流程（可選，用於清理）
@@ -59,19 +63,36 @@ class WorkflowManager {
         delete this.workflows[userId];
     }
 
+    private initLock(userId: string): void {
+        if (!this.locks[userId]) {
+            this.locks[userId] = false;
+        }
+    }
+
     // 鎖定使用者流程，防止其他操作介入
     lock(userId: string): void {
+        this.initLock(userId);
         this.locks[userId] = true;
+        this.lastRequestTime[userId] = Date.now();
     }
 
     // 解鎖使用者流程，允許後續操作
     unlock(userId: string): void {
+        this.initLock(userId);
         this.locks[userId] = false;
+        this.lastRequestTime[userId] = null;
     }
 
     // 檢查使用者是否處於鎖定狀態
     isLocked(userId: string): boolean {
-        return this.locks[userId] === true;
+        this.initLock(userId);
+        if (
+            this.locks[userId] || this.lastRequestTime[userId] &&
+            Date.now() - this.lastRequestTime[userId] < userDuplicateRequestIntervalMs
+        ) {
+            return true;
+        }
+        return false;
     }
 
     // 記錄流程資料

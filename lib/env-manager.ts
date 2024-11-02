@@ -3,6 +3,8 @@
 /*
 export WHITELIST_USER_IDS="U1234567890abcdef1234567890abcdef,Uabcdef1234567890abcdef1234567890,U88888888888888888888888888888888"
 
+export USER_DUPLICATE_REQUEST_INTERVAL_MS=5000 做為防止使用者重複輸入的機制
+
 export PERSON_COUNT=2
 export PERSON_1_USERNAME="王大明"
 export PERSON_1_USERID="U1234567890abcdef1234567890abcdef" TODO: 未來可做為廣播時 TAG 使用, 目前尚無利用
@@ -133,3 +135,6 @@ export const channelAccessToken = process.env.CHANNEL_ACCESS_TOKEN || "";
 
 // BROADCAST_GROUP_ID
 export const broadcastGroupId = process.env.BROADCAST_GROUP_ID || "";
+
+// USER_DUPLICATE_REQUEST_INTERVAL_MS
+export const userDuplicateRequestIntervalMs = Number(process.env.USER_DUPLICATE_REQUEST_INTERVAL_MS || 5000);

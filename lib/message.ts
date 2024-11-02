@@ -4,7 +4,7 @@ import { ButtonConfig } from "../models/message-model";
 export function createButtonFlexMessage(title: string, buttons: ButtonConfig[]): Line.messagingApi.Message {
   return {
     type: "flex",
-    altText: "",
+    altText: "訊息",
     contents: {
       type: "bubble",
       body: {
